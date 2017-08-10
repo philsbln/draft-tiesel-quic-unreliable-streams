@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>philsbln/draft-tiesel-quic-unreliable-streams branches</title>
+    <style>
+      body { font-family: sans-serif; }
+      h2 { font-size: 130%; }
+      h3 { font-size: 120%; color: #222; }
+    </style>
+  </head>
+  <body>
+    <h2>Editor's drafts for philsbln/draft-tiesel-quic-unreliable-streams</h2>
+    <ul id="branch-master">
+      <li>
+        draft-tiesel-quic-unreliable-streams: 
+        <a href="./draft-tiesel-quic-unreliable-streams.html"
+           class="html draft-tiesel-quic-unreliable-streams">html</a>, 
+        <a href="./draft-tiesel-quic-unreliable-streams.txt"
+           class="txt draft-tiesel-quic-unreliable-streams">plain text</a>, 
+        <a href="https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-tiesel-quic-unreliable-streams.txt&amp;url2=https://philsbln.github.io/draft-tiesel-quic-unreliable-streams/draft-tiesel-quic-unreliable-streams.txt"
+           class="diff draft-tiesel-quic-unreliable-streams">
+          diff with last submission</a>
+      </li>
+    </ul>
+    <script>
+// @licstart
+//  Any copyright is dedicated to the Public Domain.
+//  http://creativecommons.org/publicdomain/zero/1.0/
+// @licend */
+window.onload = function() {
+  var referrer_branch = 'master';
+  // e.g., "https://github.com/user/repo/tree/master"
+  var chunks = document.referrer.split("/");
+  if (chunks[2] === 'github.com' && chunks[5] === 'tree') {
+    referrer_branch = chunks[6];
+  }
+  let branch = document.querySelector('#branch-' + referrer_branch);
+  let h = document.location.hash.substring(1);
+  if (h === 'show') {
+    document.location.hash = '#' + branch.id;
+  } else if (branch && h.startsWith('go')) {
+    let e = branch.querySelector(h.substring(2));
+    if (e && e.href) {
+      document.location = e.href;
+    }
+  }
+};
+    </script>
+  </body>
+</html>
