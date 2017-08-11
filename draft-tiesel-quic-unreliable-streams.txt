@@ -74,9 +74,9 @@ Table of Contents
    5.  Application Interface Considerations  . . . . . . . . . . . .   4
      5.1.  Retransmissions within Unreliable Streams . . . . . . . .   4
      5.2.  Presentation of Unreliable Streams  . . . . . . . . . . .   4
-   6.  Security Considerations . . . . . . . . . . . . . . . . . . .   4
-   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   4
-   8.  Informative References  . . . . . . . . . . . . . . . . . . .   4
+   6.  Security Considerations . . . . . . . . . . . . . . . . . . .   5
+   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   5
+   8.  Informative References  . . . . . . . . . . . . . . . . . . .   5
    Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   5
 
 1.  Conventions and Definitions
@@ -96,12 +96,12 @@ Table of Contents
    This memo describes how QUIC can provide reliable and unreliable
    transmission within the same connection.  We advocate to allow the
    application to request reliable or unreliable transmission in QUIC on
-   a per stream level.  We consider the alternative, having a mix of
-   reliable and unreliable transmission within the same stream makes the
-   interface for applications and the too complex.
+   a per stream level.  As we do allow a QUIC implementation to
+   retransmit unreliable stream frames, it is possible to implement a
+   mix of reliable and unreliable transmission within the same, tagged
+   unreliable, stream.
 
 3.  Connection Level Considerations
-
 
 
 
@@ -117,31 +117,58 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
 3.1.  Unreliable Stream Support Negotiation
 
    To keep the complexity of a minimal QUIC implementation low, the
-   support of unreliable streams is optional.  Client and server
-   negotiate during the TLS handshake whether the connection being set
-   up supports unreliable streams.
+   support of unreliable streams is optional.  An endpoint signals its
+   willingness to receiving unreliable stream frames during the TLS
+   handshake using the transport parameter
+   accept_unreliable_stream_frames (value TBD - used as flag the same
+   way as omit_connection_id specified in [I-D.draft-ietf-quic-
+   transport]).
+
+   Connections on behalf of applications that make no use of partial
+   delivery of stream data should not send
+   accept_unreliable_stream_frames even if the QUIC implementation
+   support it.
 
 4.  Stream Level Considerations
 
 4.1.  Stream Open
 
-   The sender opening an reliable stream must set 'R' bit of the type
-   byte for a STREAM frame to 1.  The sender opening an unreliable
-   stream must set 'R' bit of the type byte for a STREAM frame to 0.
+   In addition to the stream open specified in [I-D.draft-ietf-quic-
+   transport], an endpoint opening a stream MUST indicate whether the
+   stream is reliable and therefore the receiver can rely on the sender
+   retransmitting lost stream data.
 
-   When support of unreliable streams has not been negotiated, receiving
-   a STREAM frame having the 'R' bit not set is considered an error.  An
-   endpoint receiving such a frame MUST answer with a RST_STREAM frame
-   indicating a STREAM_STATE_ERROR.
+   o  The sender opening an reliable stream must set 'R' bit of the type
+      byte for a STREAM frame to 1.
+
+   o  The sender opening an unreliable stream must set 'R' bit of the
+      type byte for a STREAM frame to 0.
+
+   A client that has not indicated its willingness to receive unreliable
+   stream frames as using the transport parameter
+   accept_unreliable_stream_frames MUST answer with a RST_STREAM frame
+   indicating a STREAM_STATE_ERROR when receiving a STREAM frame having
+   the 'R' bit not set.
+
+   All frames of a stream MUST have the R bit to the same value.
 
 4.2.  Stream Close
 
    As frames of unreliable streams may not be retransmitted, the loss of
-   a unreliable stream frame carrying a FIN bit may lead zombie streams.
-   To avoid this, there are to design options:
+   a unreliable stream frame carrying a FIN bit may lead result in
+   ending up with zombie streams.  To prevent this this, we consider two
+   design options:
 
-   o  STREAM fames carrying the FIN bit need to be retransmitted
-      regardless whether a stream is reliable or not
+   o  STREAM fames carrying the FIN bit MUST to be retransmitted if lost
+      regardless whether a stream is marked reliable or not.
+
+
+
+
+Tiesel                  Expires December 29, 2017               [Page 3]
+
+Internet-Draft           QUIC Unreliable Streams               June 2017
+
 
    o  Unreliable streams have to be explicitly closed with a RST_STREAM
       or CLOSE_STREAM frame indicating the final offset of the stream.
@@ -162,21 +189,14 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
    This reduces the code paths that cause state transitions from open to
    half-closed and eases state keeping for unreliable streams by having
    reliable signaling of closing unreliable stream.  It comes with the
-
-
-
-Tiesel                  Expires December 29, 2017               [Page 3]
-
-Internet-Draft           QUIC Unreliable Streams               June 2017
-
-
    caveat of increasing the minimal on-wire data of a stream by 16
    bytes.  Renaming RST_STREAM to CLOSE_STREAM might be useful to avoid
    confusion.
 
 4.3.  Stream ID 0x0
 
-   The R bit for stream ID 0x0 MUST NOT be set to 0 for obvious reasons.
+   Data of stream 0x0 MUST be transmitted reliably as TLS expects
+   reliable transmission.
 
 5.  Application Interface Considerations
 
@@ -189,9 +209,22 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
    to an application provided deadline or only retransmit certain byte
    ranges.
 
+   An QUIC implementation that implements retransmissions on a per-
+   packet basis therefore may retransmit unreliable stream data even if
+   not requested by the application.
+
 5.2.  Presentation of Unreliable Streams
 
    The presentation of unreliable streams is application specific.
+
+
+
+
+
+Tiesel                  Expires December 29, 2017               [Page 4]
+
+Internet-Draft           QUIC Unreliable Streams               June 2017
+
 
    The anticipated use cases include: - Data being delivered annotated
    with its offset as it is received.  - Data being delivered after a
@@ -218,14 +251,6 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
               Congestion Control", draft-ietf-quic-recovery-04 (work in
               progress), June 2017.
 
-
-
-
-Tiesel                  Expires December 29, 2017               [Page 4]
-
-Internet-Draft           QUIC Unreliable Streams               June 2017
-
-
    [I-D.draft-ietf-quic-transport-04]
               Iyengar, J. and M. Thomson, "QUIC: A UDP-Based Multiplexed
               and Secure Transport", draft-ietf-quic-transport-04 (work
@@ -245,31 +270,6 @@ Author's Address
    Germany
 
    Email: philipp@inet.tu-berlin.de
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
