@@ -40,7 +40,7 @@ This draft contains a collection of considerations and requirements
 for unreliable streams in QUIC as well as a proposal how to implement
 unreliable streams within QUIC-xx.
 The intention of this document is to collect all unreliable streams
-considerations and framing till these can be merged in [I-D.draft-ietf-quic-transport] and [I-D.draft-ietf-quic-recovery]
+considerations and framing till these can be merged in [I-D.draft-ietf-quic-transport] and [I-D.draft-ietf-quic-recovery].
 
 --- middle
 
@@ -69,6 +69,7 @@ application to request reliable or unreliable transmission in QUIC on
 a per stream level. As we do allow a QUIC implementation to retransmit
 unreliable stream frames, it is possible to implement a mix of reliable
 and unreliable transmission within the same, tagged unreliable, stream.
+
 
 
 Connection Level Considerations
@@ -100,50 +101,27 @@ In addition to the stream open specified in [I-D.draft-ietf-quic-transport], an 
 MUST indicate whether the stream is reliable and therefore the
 receiver can rely on the sender retransmitting lost stream data.
 
- - The sender opening an reliable stream must set 'R' bit of the type
-byte for a STREAM frame to 1.
- - The sender opening an unreliable stream must set 'R' bit of the type
-byte for a STREAM frame to 0.
+We see two options how to indicate whether a stream is reliable or not:
 
-A client that has not indicated its willingness to receive
-unreliable stream frames as using the transport parameter
-accept_unreliable_stream_frames MUST answer with a RST_STREAM frame
-indicating a STREAM_STATE_ERROR when receiving a STREAM frame having
-the 'R' bit not set.
+ - Leave it completely to the application layer.
+ - Indicate it in the stream frame header by repurposing the
+   'F' (FIN) bit as 'R' (RELIABLE) bit and indicate the stream close
+   using CLOSE_STREAM / RST_STREAM frames.
 
-All frames of a stream MUST have the R bit to the same value.
+See {{app_ind}} for an implementation proposal of the former and
+{{str_ind}} for an implementation proposal of the latter.
+
+The authors advocate for explicitly signaling unreliable streams in
+the stream frame header as it does not introduce additional
+interwinding between QUIC and the application and makes usage of
+unreliable streams for a limited amount of stream data much easier.
 
 
 Stream Close
 ------------
 
 As frames of unreliable streams may not be retransmitted, the loss
-of a unreliable stream frame carrying a FIN bit may lead result in
-ending up with zombie streams. To prevent this this, we consider two design options:
-
-- STREAM fames carrying the FIN bit MUST to be retransmitted if lost regardless whether a stream is marked reliable or not.
-- Unreliable streams have to be explicitly closed with a RST_STREAM
-  or CLOSE_STREAM frame indicating the final offset of the stream.
-  The the RST_STREAM frame has to be resent if lost.
-
-We advocate for the latter option, repurposing the FIN bit as 'R'
-bit and changing the stream close semantic to the following:
-
-- Once an endpoint has completed sending all stream data,
-  it sends a RST_STREAM frame with error code NO_ERROR.
-  The stream state becomes "half-closed (local).
-- A stream in state 'open' for which a RST_STREAM frame with error
-  code NO_ERROR is received, transitions to "half-closed (remote)"
-  state.
-  An endpoint could continue receiving frames for the stream if
-  not all data advertised in 'Final Offset' was received.
-
-This reduces the code paths that cause state transitions from open
-to half-closed and eases state keeping for unreliable streams by
-having reliable signaling of closing unreliable stream.
-It comes with the caveat of increasing the minimal on-wire data of
-a stream by 16 bytes.
-Renaming RST_STREAM to CLOSE_STREAM might be useful to avoid confusion.
+of a frame indicating the end of a stream may introduce zombie streams.
 
 
 Stream ID 0x0
@@ -151,6 +129,8 @@ Stream ID 0x0
 
 Data of stream 0x0 MUST be transmitted reliably as TLS expects
 reliable transmission.
+
+
 
 
 
@@ -196,7 +176,75 @@ TBD
 
 
 
+
 --- back
 
+Implementation proposal with application layer indicated relniabliliy {#app_ind}
+===========================
+
+This implementation proposal lets the decision and indication of
+unreliable transmission completely to the application.
+In this proposal, the state space and error handling for applications
+can become quite complex when control messages at the start of a stream
+are transmitted unreliably.
+The advantage of this implementation proposal requiring only minimal
+changes to [I-D.draft-ietf-quic-transport] and [I-D.draft-ietf-quic-recovery].
+
+Stream Close
+------------
+
+As frames of unreliable streams may not be retransmitted, the loss
+of a unreliable stream frame carrying a FIN bit may lead to zombie
+streams.
+To prevent this this STREAM fames carrying the FIN bit MUST to
+be retransmitted if lost regardless whether a stream is reliable or not.
+
+
+
+Implementation proposal with stream frame indicated relniabliliy {#str_ind}
+===========================
+
+This implementation proposal repurposes the 'F' (FIN) bit
+from  [I-D.draft-ietf-quic-transport] as 'R'(RELIABLE) bit and
+indicates the stream close using CLOSE_STREAM / RST_STREAM frames.
+
+Stream Open
+-----------
+
+ - The sender opening an reliable stream must set 'R' bit of the type
+byte for a STREAM frame to 1.
+ - The sender opening an unreliable stream must set 'R' bit of the type
+byte for a STREAM frame to 0.
+
+A client that has not indicated its willingness to receive
+unreliable stream frames as using the transport parameter
+accept_unreliable_stream_frames MUST answer with a RST_STREAM frame
+indicating a STREAM_STATE_ERROR when receiving a STREAM frame having
+the 'R' bit not set.
+
+All frames of a stream MUST have the R bit to the same value.
+
+
+Stream Close
+------------
+
+Streams MUST explicitly closed with a CLOSE_STREAM frame indicating the stream ID and final offset of the stream to prevent zombie streams.
+(Alternative implementation option: RST_STREAM frame with error code NO_ERROR indicating the final offset).
+The the CLOSE_STREAM / RST_STREAM frame has to be resent if lost
+even if the stream frames of this stream are transmitted unreliably.
+
+- Once an endpoint has completed sending all stream data,
+  it sends a CLOSE_STREAM frame.
+  The stream state becomes "half-closed (local).
+- A stream in state 'open' for which a CLOSE_STREAM frame is received,
+  transitions to "half-closed (remote)" state.
+  An endpoint could continue receiving frames for the stream if
+  not all data advertised in 'Final Offset' was received.
+
+This reduces the code paths that cause state transitions from open
+to half-closed and eases state keeping for unreliable streams by
+having reliable signaling of closing unreliable stream.
+It comes with the caveat of increasing the minimal on-wire data of
+a stream by 16 bytes.
 
 
