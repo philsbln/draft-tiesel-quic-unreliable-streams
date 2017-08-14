@@ -19,7 +19,7 @@ Abstract
    unreliable streams within QUIC-xx.  The intention of this document is
    to collect all unreliable streams considerations and framing till
    these can be merged in [I-D.draft-ietf-quic-transport] and [I-
-   D.draft-ietf-quic-recovery]
+   D.draft-ietf-quic-recovery].
 
 Status of This Memo
 
@@ -65,19 +65,26 @@ Table of Contents
 
    1.  Conventions and Definitions . . . . . . . . . . . . . . . . .   2
    2.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
-   3.  Connection Level Considerations . . . . . . . . . . . . . . .   2
+   3.  Connection Level Considerations . . . . . . . . . . . . . . .   3
      3.1.  Unreliable Stream Support Negotiation . . . . . . . . . .   3
    4.  Stream Level Considerations . . . . . . . . . . . . . . . . .   3
      4.1.  Stream Open . . . . . . . . . . . . . . . . . . . . . . .   3
-     4.2.  Stream Close  . . . . . . . . . . . . . . . . . . . . . .   3
+     4.2.  Stream Close  . . . . . . . . . . . . . . . . . . . . . .   4
      4.3.  Stream ID 0x0 . . . . . . . . . . . . . . . . . . . . . .   4
    5.  Application Interface Considerations  . . . . . . . . . . . .   4
      5.1.  Retransmissions within Unreliable Streams . . . . . . . .   4
      5.2.  Presentation of Unreliable Streams  . . . . . . . . . . .   4
-   6.  Security Considerations . . . . . . . . . . . . . . . . . . .   5
-   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   5
-   8.  Informative References  . . . . . . . . . . . . . . . . . . .   5
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   5
+   6.  Security Considerations . . . . . . . . . . . . . . . . . . .   4
+   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   4
+   8.  Informative References  . . . . . . . . . . . . . . . . . . .   4
+   Appendix A.  Implementation proposal with application layer
+                indicated relniabliliy . . . . . . . . . . . . . . .   5
+     A.1.  Stream Close  . . . . . . . . . . . . . . . . . . . . . .   5
+   Appendix B.  Implementation proposal with stream frame indicated
+                relniabliliy . . . . . . . . . . . . . . . . . . . .   5
+     B.1.  Stream Open . . . . . . . . . . . . . . . . . . . . . . .   5
+     B.2.  Stream Close  . . . . . . . . . . . . . . . . . . . . . .   6
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   6
 
 1.  Conventions and Definitions
 
@@ -98,13 +105,6 @@ Table of Contents
    application to request reliable or unreliable transmission in QUIC on
    a per stream level.  As we do allow a QUIC implementation to
    retransmit unreliable stream frames, it is possible to implement a
-   mix of reliable and unreliable transmission within the same, tagged
-   unreliable, stream.
-
-3.  Connection Level Considerations
-
-
-
 
 
 
@@ -113,6 +113,11 @@ Tiesel                  Expires December 29, 2017               [Page 2]
 
 Internet-Draft           QUIC Unreliable Streams               June 2017
 
+
+   mix of reliable and unreliable transmission within the same, tagged
+   unreliable, stream.
+
+3.  Connection Level Considerations
 
 3.1.  Unreliable Stream Support Negotiation
 
@@ -138,29 +143,24 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
    stream is reliable and therefore the receiver can rely on the sender
    retransmitting lost stream data.
 
-   o  The sender opening an reliable stream must set 'R' bit of the type
-      byte for a STREAM frame to 1.
+   We see two options how to indicate whether a stream is reliable or
+   not:
 
-   o  The sender opening an unreliable stream must set 'R' bit of the
-      type byte for a STREAM frame to 0.
+   o  Leave it completely to the application layer.
 
-   A client that has not indicated its willingness to receive unreliable
-   stream frames as using the transport parameter
-   accept_unreliable_stream_frames MUST answer with a RST_STREAM frame
-   indicating a STREAM_STATE_ERROR when receiving a STREAM frame having
-   the 'R' bit not set.
+   o  Indicate it in the stream frame header by repurposing the 'F'
+      (FIN) bit as 'R' (RELIABLE) bit and indicate the stream close
+      using CLOSE_STREAM / RST_STREAM frames.
 
-   All frames of a stream MUST have the R bit to the same value.
+   See Appendix A for an implementation proposal of the former and
+   Appendix B for an implementation proposal of the latter.
 
-4.2.  Stream Close
+   The authors advocate for explicitly signaling unreliable streams in
+   the stream frame header as it does not introduce additional
+   interwinding between QUIC and the application and makes usage of
+   unreliable streams for a limited amount of stream data much easier.
 
-   As frames of unreliable streams may not be retransmitted, the loss of
-   a unreliable stream frame carrying a FIN bit may lead result in
-   ending up with zombie streams.  To prevent this this, we consider two
-   design options:
 
-   o  STREAM fames carrying the FIN bit MUST to be retransmitted if lost
-      regardless whether a stream is marked reliable or not.
 
 
 
@@ -170,28 +170,10 @@ Tiesel                  Expires December 29, 2017               [Page 3]
 Internet-Draft           QUIC Unreliable Streams               June 2017
 
 
-   o  Unreliable streams have to be explicitly closed with a RST_STREAM
-      or CLOSE_STREAM frame indicating the final offset of the stream.
-      The the RST_STREAM frame has to be resent if lost.
+4.2.  Stream Close
 
-   We advocate for the latter option, repurposing the FIN bit as 'R' bit
-   and changing the stream close semantic to the following:
-
-   o  Once an endpoint has completed sending all stream data, it sends a
-      RST_STREAM frame with error code NO_ERROR.  The stream state
-      becomes "half-closed (local).
-
-   o  A stream in state 'open' for which a RST_STREAM frame with error
-      code NO_ERROR is received, transitions to "half-closed (remote)"
-      state.  An endpoint could continue receiving frames for the stream
-      if not all data advertised in 'Final Offset' was received.
-
-   This reduces the code paths that cause state transitions from open to
-   half-closed and eases state keeping for unreliable streams by having
-   reliable signaling of closing unreliable stream.  It comes with the
-   caveat of increasing the minimal on-wire data of a stream by 16
-   bytes.  Renaming RST_STREAM to CLOSE_STREAM might be useful to avoid
-   confusion.
+   As frames of unreliable streams may not be retransmitted, the loss of
+   a frame indicating the end of a stream may introduce zombie streams.
 
 4.3.  Stream ID 0x0
 
@@ -217,15 +199,6 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
 
    The presentation of unreliable streams is application specific.
 
-
-
-
-
-Tiesel                  Expires December 29, 2017               [Page 4]
-
-Internet-Draft           QUIC Unreliable Streams               June 2017
-
-
    The anticipated use cases include: - Data being delivered annotated
    with its offset as it is received.  - Data being delivered after a
    deadline, e.g. with an annotated list of holes and byte ranges of
@@ -246,6 +219,13 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
               Transport Protocol", draft-ietf-quic-applicability-00
               (work in progress), July 2017.
 
+
+
+Tiesel                  Expires December 29, 2017               [Page 4]
+
+Internet-Draft           QUIC Unreliable Streams               June 2017
+
+
    [I-D.draft-ietf-quic-recovery-04]
               Iyengar, J. and I. Swett, "QUIC Loss Detection and
               Congestion Control", draft-ietf-quic-recovery-04 (work in
@@ -260,6 +240,79 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
               <http://www.rfc-editor.org/info/rfc2119>.
+
+Appendix A.  Implementation proposal with application layer indicated
+             relniabliliy
+
+   This implementation proposal lets the decision and indication of
+   unreliable transmission completely to the application.  In this
+   proposal, the state space and error handling for applications can
+   become quite complex when control messages at the start of a stream
+   are transmitted unreliably.  The advantage of this implementation
+   proposal requiring only minimal changes to [I-D.draft-ietf-quic-
+   transport] and [I-D.draft-ietf-quic-recovery].
+
+A.1.  Stream Close
+
+   As frames of unreliable streams may not be retransmitted, the loss of
+   a unreliable stream frame carrying a FIN bit may lead to zombie
+   streams.  To prevent this this STREAM fames carrying the FIN bit MUST
+   to be retransmitted if lost regardless whether a stream is reliable
+   or not.
+
+Appendix B.  Implementation proposal with stream frame indicated
+             relniabliliy
+
+   This implementation proposal repurposes the 'F' (FIN) bit from [I-
+   D.draft-ietf-quic-transport] as 'R'(RELIABLE) bit and indicates the
+   stream close using CLOSE_STREAM / RST_STREAM frames.
+
+B.1.  Stream Open
+
+   o  The sender opening an reliable stream must set 'R' bit of the type
+      byte for a STREAM frame to 1.
+
+   o  The sender opening an unreliable stream must set 'R' bit of the
+      type byte for a STREAM frame to 0.
+
+
+
+Tiesel                  Expires December 29, 2017               [Page 5]
+
+Internet-Draft           QUIC Unreliable Streams               June 2017
+
+
+   A client that has not indicated its willingness to receive unreliable
+   stream frames as using the transport parameter
+   accept_unreliable_stream_frames MUST answer with a RST_STREAM frame
+   indicating a STREAM_STATE_ERROR when receiving a STREAM frame having
+   the 'R' bit not set.
+
+   All frames of a stream MUST have the R bit to the same value.
+
+B.2.  Stream Close
+
+   Streams MUST explicitly closed with a CLOSE_STREAM frame indicating
+   the stream ID and final offset of the stream to prevent zombie
+   streams.  (Alternative implementation option: RST_STREAM frame with
+   error code NO_ERROR indicating the final offset).  The the
+   CLOSE_STREAM / RST_STREAM frame has to be resent if lost even if the
+   stream frames of this stream are transmitted unreliably.
+
+   o  Once an endpoint has completed sending all stream data, it sends a
+      CLOSE_STREAM frame.  The stream state becomes "half-closed
+      (local).
+
+   o  A stream in state 'open' for which a CLOSE_STREAM frame is
+      received, transitions to "half-closed (remote)" state.  An
+      endpoint could continue receiving frames for the stream if not all
+      data advertised in 'Final Offset' was received.
+
+   This reduces the code paths that cause state transitions from open to
+   half-closed and eases state keeping for unreliable streams by having
+   reliable signaling of closing unreliable stream.  It comes with the
+   caveat of increasing the minimal on-wire data of a stream by 16
+   bytes.
 
 Author's Address
 
@@ -277,4 +330,7 @@ Author's Address
 
 
 
-Tiesel                  Expires December 29, 2017               [Page 5]
+
+
+
+Tiesel                  Expires December 29, 2017               [Page 6]
