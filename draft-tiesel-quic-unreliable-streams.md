@@ -123,7 +123,6 @@ Stream Close
 As frames of unreliable streams may not be retransmitted, the loss
 of a frame indicating the end of a stream may introduce zombie streams.
 
-
 Stream ID 0x0
 -------------
 
@@ -131,6 +130,17 @@ Data of stream 0x0 MUST be transmitted reliably as TLS expects
 reliable transmission.
 
 
+Congestion Control on Unreliable Streams
+----------------------------------------
+
+Unreliable streams are subject to regular congestion control.
+CLOSE_STREAM Frames are, like ACK and RST_STREAM frames not subject to congestion control.
+
+
+Flow Control on Unreliable Streams
+----------------------------------
+
+Unreliable streams are subject to regular flow control on connection and stream level.
 
 
 
@@ -157,8 +167,21 @@ Presentation of Unreliable Streams
 The presentation of unreliable streams is application specific.
 
 The anticipated use cases include:
-- Data being delivered annotated with its offset as it is received.
-- Data being delivered after a deadline, e.g. with an annotated list of holes and byte ranges of lost data filled with zeros.
+
+ - Data being delivered annotated with its offset as it is received.
+ - Data being delivered after a deadline, e.g. with an annotated list of holes and byte ranges of lost data filled with zeros.
+
+
+Prioritization of Unreliable Streams
+------------------------------------
+
+Unreliable streams are not prioritized in any special way.
+
+Applications that need UDP like behavior must make sure that:
+
+ - The flow control windows are large enough to send at any given point in time
+ - The data rate sent in all frames stays below the one permitted by the congestion window.
+ - The priority of unreliable streams is high enough to transmit data, even if there are retransmissions outstanding on other streams.
 
 
 
@@ -233,13 +256,13 @@ Streams MUST explicitly closed with a CLOSE_STREAM frame indicating the stream I
 The the CLOSE_STREAM / RST_STREAM frame has to be resent if lost
 even if the stream frames of this stream are transmitted unreliably.
 
-- Once an endpoint has completed sending all stream data,
-  it sends a CLOSE_STREAM frame.
-  The stream state becomes "half-closed (local).
-- A stream in state 'open' for which a CLOSE_STREAM frame is received,
-  transitions to "half-closed (remote)" state.
-  An endpoint could continue receiving frames for the stream if
-  not all data advertised in 'Final Offset' was received.
+ - Once an endpoint has completed sending all stream data,
+   it sends a CLOSE_STREAM frame.
+   The stream state becomes "half-closed (local).
+ - A stream in state 'open' for which a CLOSE_STREAM frame is received,
+   transitions to "half-closed (remote)" state.
+   An endpoint could continue receiving frames for the stream if
+   not all data advertised in 'Final Offset' was received.
 
 This reduces the code paths that cause state transitions from open
 to half-closed and eases state keeping for unreliable streams by
