@@ -283,9 +283,12 @@ address {
 <link href="#rfc.section.4.1" rel="Chapter" title="4.1 Stream Open"/>
 <link href="#rfc.section.4.2" rel="Chapter" title="4.2 Stream Close"/>
 <link href="#rfc.section.4.3" rel="Chapter" title="4.3 Stream ID 0x0"/>
+<link href="#rfc.section.4.4" rel="Chapter" title="4.4 Congestion Control on Unreliable Streams"/>
+<link href="#rfc.section.4.5" rel="Chapter" title="4.5 Flow Control on Unreliable Streams"/>
 <link href="#rfc.section.5" rel="Chapter" title="5 Application Interface Considerations"/>
 <link href="#rfc.section.5.1" rel="Chapter" title="5.1 Retransmissions within Unreliable Streams"/>
 <link href="#rfc.section.5.2" rel="Chapter" title="5.2 Presentation of Unreliable Streams"/>
+<link href="#rfc.section.5.3" rel="Chapter" title="5.3 Prioritization of Unreliable Streams"/>
 <link href="#rfc.section.6" rel="Chapter" title="6 Security Considerations"/>
 <link href="#rfc.section.7" rel="Chapter" title="7 IANA Considerations"/>
 <link href="#rfc.references" rel="Chapter" title="8 Informative References"/>
@@ -367,9 +370,12 @@ address {
 <ul><li>4.1.   <a href="#rfc.section.4.1">Stream Open</a></li>
 <li>4.2.   <a href="#rfc.section.4.2">Stream Close</a></li>
 <li>4.3.   <a href="#rfc.section.4.3">Stream ID 0x0</a></li>
+<li>4.4.   <a href="#rfc.section.4.4">Congestion Control on Unreliable Streams</a></li>
+<li>4.5.   <a href="#rfc.section.4.5">Flow Control on Unreliable Streams</a></li>
 </ul><li>5.   <a href="#rfc.section.5">Application Interface Considerations</a></li>
 <ul><li>5.1.   <a href="#rfc.section.5.1">Retransmissions within Unreliable Streams</a></li>
 <li>5.2.   <a href="#rfc.section.5.2">Presentation of Unreliable Streams</a></li>
+<li>5.3.   <a href="#rfc.section.5.3">Prioritization of Unreliable Streams</a></li>
 </ul><li>6.   <a href="#rfc.section.6">Security Considerations</a></li>
 <li>7.   <a href="#rfc.section.7">IANA Considerations</a></li>
 <li>8.   <a href="#rfc.references">Informative References</a></li>
@@ -408,13 +414,33 @@ address {
 <p id="rfc.section.4.2.p.1">As frames of unreliable streams may not be retransmitted, the loss of a frame indicating the end of a stream may introduce zombie streams.</p>
 <h1 id="rfc.section.4.3"><a href="#rfc.section.4.3">4.3.</a> <a href="#stream-id-0x0" id="stream-id-0x0">Stream ID 0x0</a></h1>
 <p id="rfc.section.4.3.p.1">Data of stream 0x0 MUST be transmitted reliably as TLS expects reliable transmission.</p>
+<h1 id="rfc.section.4.4"><a href="#rfc.section.4.4">4.4.</a> <a href="#congestion-control-on-unreliable-streams" id="congestion-control-on-unreliable-streams">Congestion Control on Unreliable Streams</a></h1>
+<p id="rfc.section.4.4.p.1">Unreliable streams are subject to regular congestion control.  CLOSE_STREAM Frames are, like ACK and RST_STREAM frames not subject to congestion control.</p>
+<h1 id="rfc.section.4.5"><a href="#rfc.section.4.5">4.5.</a> <a href="#flow-control-on-unreliable-streams" id="flow-control-on-unreliable-streams">Flow Control on Unreliable Streams</a></h1>
+<p id="rfc.section.4.5.p.1">Unreliable streams are subject to regular flow control on connection and stream level.</p>
 <h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a> <a href="#application-interface-considerations" id="application-interface-considerations">Application Interface Considerations</a></h1>
 <h1 id="rfc.section.5.1"><a href="#rfc.section.5.1">5.1.</a> <a href="#retransmissions-within-unreliable-streams" id="retransmissions-within-unreliable-streams">Retransmissions within Unreliable Streams</a></h1>
 <p id="rfc.section.5.1.p.1">While unreliable streams suggest just disabling retransmissions for these streams, applications my choose to apply arbitrary retransmission strategies for unreliable streams, e.g. retransmit stream data as long it will likely be delivered on-time with respect to an application provided deadline or only retransmit certain byte ranges.</p>
 <p id="rfc.section.5.1.p.2">An QUIC implementation that implements retransmissions on a per-packet basis therefore may retransmit unreliable stream data even if not requested by the application.</p>
 <h1 id="rfc.section.5.2"><a href="#rfc.section.5.2">5.2.</a> <a href="#presentation-of-unreliable-streams" id="presentation-of-unreliable-streams">Presentation of Unreliable Streams</a></h1>
 <p id="rfc.section.5.2.p.1">The presentation of unreliable streams is application specific.</p>
-<p id="rfc.section.5.2.p.2">The anticipated use cases include: - Data being delivered annotated with its offset as it is received.  - Data being delivered after a deadline, e.g. with an annotated list of holes and byte ranges of lost data filled with zeros.</p>
+<p id="rfc.section.5.2.p.2">The anticipated use cases include:</p>
+<p/>
+
+<ul>
+  <li>Data being delivered annotated with its offset as it is received.</li>
+  <li>Data being delivered after a deadline, e.g. with an annotated list of holes and byte ranges of lost data filled with zeros.</li>
+</ul>
+<h1 id="rfc.section.5.3"><a href="#rfc.section.5.3">5.3.</a> <a href="#prioritization-of-unreliable-streams" id="prioritization-of-unreliable-streams">Prioritization of Unreliable Streams</a></h1>
+<p id="rfc.section.5.3.p.1">Unreliable streams are not prioritized in any special way.</p>
+<p id="rfc.section.5.3.p.2">Applications that need UDP like behavior must make sure that:</p>
+<p/>
+
+<ul>
+  <li>The flow control windows are large enough to send at any given point in time</li>
+  <li>The data rate sent in all frames stays below the one permitted by the congestion window.</li>
+  <li>The priority of unreliable streams is high enough to transmit data, even if there are retransmissions outstanding on other streams.</li>
+</ul>
 <h1 id="rfc.section.6"><a href="#rfc.section.6">6.</a> <a href="#sec" id="sec">Security Considerations</a></h1>
 <p id="rfc.section.6.p.1">TBD</p>
 <h1 id="rfc.section.7"><a href="#rfc.section.7">7.</a> <a href="#iana" id="iana">IANA Considerations</a></h1>
