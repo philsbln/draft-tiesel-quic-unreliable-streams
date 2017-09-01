@@ -4,8 +4,9 @@
 
 QUIC Working Group                                             P. Tiesel
 Internet-Draft                            Berlin Institute of Technology
-Intended status: Informational                             June 27, 2017
-Expires: December 29, 2017
+Intended status: Informational                                    J. Ott
+Expires: December 29, 2017                                     TU Munich
+                                                           June 27, 2017
 
 
              Considerations for Unreliable Streams in QUIC
@@ -16,10 +17,11 @@ Abstract
    This memo outlines support for unreliable streams in QUIC.  This
    draft contains a collection of considerations and requirements for
    unreliable streams in QUIC as well as a proposal how to implement
-   unreliable streams within QUIC-xx.  The intention of this document is
-   to collect all unreliable streams considerations and framing till
-   these can be merged in [I-D.draft-ietf-quic-transport] and [I-
-   D.draft-ietf-quic-recovery].
+   unreliable streams within quic-draft-05.  The intention of this
+   document is to collect all unreliable streams considerations and
+   framing till these can be merged in [I-D.draft-ietf-quic-transport],
+   [I-D.draft-ietf-quic-recovery] and, [I-D.draft-ietf-quic-
+   applicability].
 
 Status of This Memo
 
@@ -48,16 +50,16 @@ Copyright Notice
    (http://trustee.ietf.org/license-info) in effect on the date of
    publication of this document.  Please review these documents
    carefully, as they describe your rights and restrictions with respect
-   to this document.  Code Components extracted from this document must
-   include Simplified BSD License text as described in Section 4.e of
 
 
 
-Tiesel                  Expires December 29, 2017               [Page 1]
+Tiesel & Ott            Expires December 29, 2017               [Page 1]
 
 Internet-Draft           QUIC Unreliable Streams               June 2017
 
 
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
    the Trust Legal Provisions and are provided without warranty as
    described in the Simplified BSD License.
 
@@ -75,19 +77,19 @@ Table of Contents
      4.5.  Flow Control on Unreliable Streams  . . . . . . . . . . .   4
    5.  Application Interface Considerations  . . . . . . . . . . . .   4
      5.1.  Retransmissions within Unreliable Streams . . . . . . . .   4
-     5.2.  Presentation of Unreliable Streams  . . . . . . . . . . .   4
+     5.2.  Presentation of Unreliable Streams  . . . . . . . . . . .   5
      5.3.  Prioritization of Unreliable Streams  . . . . . . . . . .   5
    6.  Security Considerations . . . . . . . . . . . . . . . . . . .   5
    7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   5
    8.  Informative References  . . . . . . . . . . . . . . . . . . .   5
-   Appendix A.  Implementation proposal with application layer
-                indicated relniabliliy . . . . . . . . . . . . . . .   6
-     A.1.  Stream Close  . . . . . . . . . . . . . . . . . . . . . .   6
-   Appendix B.  Implementation proposal with stream frame indicated
+   Appendix A.  Proposal with application layer indicated
                 relniabliliy . . . . . . . . . . . . . . . . . . . .   6
+     A.1.  Stream Close  . . . . . . . . . . . . . . . . . . . . . .   6
+   Appendix B.  Proposal with stream frame indicated relniabliliy  .   6
      B.1.  Stream Open . . . . . . . . . . . . . . . . . . . . . . .   6
-     B.2.  Stream Close  . . . . . . . . . . . . . . . . . . . . . .   6
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   7
+     B.2.  Stream Close  . . . . . . . . . . . . . . . . . . . . . .   7
+     B.3.  CLOSE_STREAM Frame  . . . . . . . . . . . . . . . . . . .   7
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   8
 
 1.  Conventions and Definitions
 
@@ -103,17 +105,18 @@ Table of Contents
    of these use cases, there is still a need to transmit some data,
    often control or meta data, reliably.
 
-   This memo describes how QUIC can provide reliable and unreliable
-   transmission within the same connection.  We advocate to allow the
-   application to request reliable or unreliable transmission in QUIC on
 
 
 
-Tiesel                  Expires December 29, 2017               [Page 2]
+
+Tiesel & Ott            Expires December 29, 2017               [Page 2]
 
 Internet-Draft           QUIC Unreliable Streams               June 2017
 
 
+   This memo describes how QUIC can provide reliable and unreliable
+   transmission within the same connection.  We advocate to allow the
+   application to request reliable or unreliable transmission in QUIC on
    a per stream level.  As we do allow a QUIC implementation to
    retransmit unreliable stream frames, it is possible to implement a
    mix of reliable and unreliable transmission within the same, tagged
@@ -154,26 +157,31 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
       (FIN) bit as 'R' (RELIABLE) bit and indicate the stream close
       using CLOSE_STREAM / RST_STREAM frames.
 
-   See Appendix A for an implementation proposal of the former and
-   Appendix B for an implementation proposal of the latter.
+   See Appendix A for a proposal specifying the former and Appendix B
+   for a proposal specifying the latter.
 
    The authors advocate for explicitly signaling unreliable streams in
    the stream frame header as it does not introduce additional
-   interwinding between QUIC and the application and makes usage of
-   unreliable streams for a limited amount of stream data much easier.
 
 
 
-
-Tiesel                  Expires December 29, 2017               [Page 3]
+Tiesel & Ott            Expires December 29, 2017               [Page 3]
 
 Internet-Draft           QUIC Unreliable Streams               June 2017
 
+
+   interwinding between QUIC and the application and makes usage of
+   unreliable streams for a limited amount of stream data much easier.
 
 4.2.  Stream Close
 
    As frames of unreliable streams may not be retransmitted, the loss of
    a frame indicating the end of a stream may introduce zombie streams.
+
+   A final protocol MUST make sure that either such a zombie state does
+   not occur (as the proposals in Appendix A and Appendix B do) or
+   include a mechanism to clean up zombie streams, e.g. by using a
+   window of active unreliable stream ids.
 
 4.3.  Stream ID 0x0
 
@@ -206,6 +214,18 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
    packet basis therefore may retransmit unreliable stream data even if
    not requested by the application.
 
+
+
+
+
+
+
+
+Tiesel & Ott            Expires December 29, 2017               [Page 4]
+
+Internet-Draft           QUIC Unreliable Streams               June 2017
+
+
 5.2.  Presentation of Unreliable Streams
 
    The presentation of unreliable streams is application specific.
@@ -216,15 +236,6 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
 
    o  Data being delivered after a deadline, e.g. with an annotated list
       of holes and byte ranges of lost data filled with zeros.
-
-
-
-
-
-Tiesel                  Expires December 29, 2017               [Page 4]
-
-Internet-Draft           QUIC Unreliable Streams               June 2017
-
 
 5.3.  Prioritization of Unreliable Streams
 
@@ -242,6 +253,10 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
       data, even if there are retransmissions outstanding on other
       streams.
 
+   To enable writing portable applications, guidelines how
+   prioritization should be handled in a QUIC implementation and how it
+   is exposed to the application are required.
+
 6.  Security Considerations
 
    TBD
@@ -256,6 +271,16 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
               Kuehlewind, M. and B. Trammell, "Applicability of the QUIC
               Transport Protocol", draft-ietf-quic-applicability-00
               (work in progress), July 2017.
+
+
+
+
+
+
+Tiesel & Ott            Expires December 29, 2017               [Page 5]
+
+Internet-Draft           QUIC Unreliable Streams               June 2017
+
 
    [I-D.draft-ietf-quic-recovery-04]
               Iyengar, J. and I. Swett, "QUIC Loss Detection and
@@ -272,18 +297,7 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
               DOI 10.17487/RFC2119, March 1997, <https://www.rfc-
               editor.org/info/rfc2119>.
 
-
-
-
-
-
-Tiesel                  Expires December 29, 2017               [Page 5]
-
-Internet-Draft           QUIC Unreliable Streams               June 2017
-
-
-Appendix A.  Implementation proposal with application layer indicated
-             relniabliliy
+Appendix A.  Proposal with application layer indicated relniabliliy
 
    This implementation proposal lets the decision and indication of
    unreliable transmission completely to the application.  In this
@@ -301,8 +315,7 @@ A.1.  Stream Close
    to be retransmitted if lost regardless whether a stream is reliable
    or not.
 
-Appendix B.  Implementation proposal with stream frame indicated
-             relniabliliy
+Appendix B.  Proposal with stream frame indicated relniabliliy
 
    This implementation proposal repurposes the 'F' (FIN) bit from [I-
    D.draft-ietf-quic-transport] as 'R'(RELIABLE) bit and indicates the
@@ -315,6 +328,15 @@ B.1.  Stream Open
 
    o  The sender opening an unreliable stream must set 'R' bit of the
       type byte for a STREAM frame to 0.
+
+
+
+
+
+Tiesel & Ott            Expires December 29, 2017               [Page 6]
+
+Internet-Draft           QUIC Unreliable Streams               June 2017
+
 
    A client that has not indicated its willingness to receive unreliable
    stream frames as using the transport parameter
@@ -329,16 +351,9 @@ B.2.  Stream Close
    Streams MUST explicitly closed with a CLOSE_STREAM frame indicating
    the stream ID and final offset of the stream to prevent zombie
    streams.  (Alternative implementation option: RST_STREAM frame with
-   error code NO_ERROR indicating the final offset).  The the
+   error code NO_ERROR indicating the final offset).
 
-
-
-Tiesel                  Expires December 29, 2017               [Page 6]
-
-Internet-Draft           QUIC Unreliable Streams               June 2017
-
-
-   CLOSE_STREAM / RST_STREAM frame has to be resent if lost even if the
+   The the CLOSE_STREAM frame has to be resent if lost even if the
    stream frames of this stream are transmitted unreliably.
 
    o  Once an endpoint has completed sending all stream data, it sends a
@@ -353,10 +368,47 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
    This reduces the code paths that cause state transitions from open to
    half-closed and eases state keeping for unreliable streams by having
    reliable signaling of closing unreliable stream.  It comes with the
-   caveat of increasing the minimal on-wire data of a stream by 16
-   bytes.
+   caveat of increasing the minimal on-wire data of a stream by at least
+   four bytes.
 
-Author's Address
+B.3.  CLOSE_STREAM Frame
+
+   The CLOSE_STREAM frame indicates the final offset of a stream and
+   therefore replaces the F bit.
+
+   I uses a type value between 0x80 and 0x9f.  The type byte for a
+   CLOSE_STREAM frame contains embedded flags, and is formatted as
+   "100RSSOO".  These bits are parsed as follows:
+
+   o  The R bit is set to 1 for complete reliable streams and o 0
+      otherwise.
+
+   o  The "SS" bits encode the length of the Stream ID header field.
+      The values 00, 01, 02, and 03 indicate lengths of 8, 16, 24, and
+      32 bits long respectively.
+
+
+
+Tiesel & Ott            Expires December 29, 2017               [Page 7]
+
+Internet-Draft           QUIC Unreliable Streams               June 2017
+
+
+   o  The "OO" bits encode the length of the Offset header field.  The
+      values 00, 01, 02, and 03 indicate lengths of 0, 16, 32, and 64
+      bits long respectively.
+
+   A CLOSE_STREAM frame is shown below.
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                    Stream ID (8/16/24/32)                   ...
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                 Final Offset (0/16/32/64)                   ...
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Authors' Addresses
 
    Philipp S. Tiesel
    Berlin Institute of Technology
@@ -367,6 +419,13 @@ Author's Address
    Email: philipp@inet.tu-berlin.de
 
 
+   Joerg Ott
+   TU Munich
+   Boltzmannstrasse 3
+   Garching bei Muenchen
+   Germany
+
+   Email: ott@in.tum.de
 
 
 
@@ -386,7 +445,4 @@ Author's Address
 
 
 
-
-
-
-Tiesel                  Expires December 29, 2017               [Page 7]
+Tiesel & Ott            Expires December 29, 2017               [Page 8]
