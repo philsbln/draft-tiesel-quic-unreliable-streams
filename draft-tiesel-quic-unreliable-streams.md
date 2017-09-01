@@ -22,6 +22,14 @@ author:
     city: Berlin
     country: Germany
     email: philipp@inet.tu-berlin.de
+ -
+    ins: J. Ott
+    name: Joerg Ott
+    organization: TU Munich
+    street: Boltzmannstraße 3
+    city: Garching bei München
+    country: Germany
+    email : ott@in.tum.de
 
 normative:
 
@@ -38,9 +46,10 @@ informative:
 This memo outlines support for unreliable streams in QUIC.
 This draft contains a collection of considerations and requirements
 for unreliable streams in QUIC as well as a proposal how to implement
-unreliable streams within QUIC-xx.
+unreliable streams within quic-draft-05.
 The intention of this document is to collect all unreliable streams
-considerations and framing till these can be merged in [I-D.draft-ietf-quic-transport] and [I-D.draft-ietf-quic-recovery].
+considerations and framing till these can be merged in [I-D.draft-ietf-quic-transport], [I-D.draft-ietf-quic-recovery] and, [I-D.draft-ietf-quic-applicability].
+
 
 --- middle
 
@@ -108,8 +117,8 @@ We see two options how to indicate whether a stream is reliable or not:
    'F' (FIN) bit as 'R' (RELIABLE) bit and indicate the stream close
    using CLOSE_STREAM / RST_STREAM frames.
 
-See {{app_ind}} for an implementation proposal of the former and
-{{str_ind}} for an implementation proposal of the latter.
+See {{app_ind}} for a proposal specifying the former and
+{{str_ind}} for a proposal specifying the latter.
 
 The authors advocate for explicitly signaling unreliable streams in
 the stream frame header as it does not introduce additional
@@ -122,6 +131,12 @@ Stream Close
 
 As frames of unreliable streams may not be retransmitted, the loss
 of a frame indicating the end of a stream may introduce zombie streams.
+
+A final protocol MUST make sure that either such a zombie state does
+not occur (as the proposals in {{app_ind}} and {{str_ind}} do) or
+include a mechanism to clean up zombie streams, e.g. by using a
+window of active unreliable stream ids.
+
 
 Stream ID 0x0
 -------------
@@ -183,6 +198,8 @@ Applications that need UDP like behavior must make sure that:
  - The data rate sent in all frames stays below the one permitted by the congestion window.
  - The priority of unreliable streams is high enough to transmit data, even if there are retransmissions outstanding on other streams.
 
+To enable writing portable applications, guidelines how prioritization should be
+handled in a QUIC implementation and how it is exposed to the application are required.
 
 
 Security Considerations {#sec}
@@ -202,7 +219,7 @@ TBD
 
 --- back
 
-Implementation proposal with application layer indicated relniabliliy {#app_ind}
+Proposal with application layer indicated relniabliliy {#app_ind}
 ===========================
 
 This implementation proposal lets the decision and indication of
@@ -224,7 +241,7 @@ be retransmitted if lost regardless whether a stream is reliable or not.
 
 
 
-Implementation proposal with stream frame indicated relniabliliy {#str_ind}
+Proposal with stream frame indicated relniabliliy {#str_ind}
 ===========================
 
 This implementation proposal repurposes the 'F' (FIN) bit
@@ -253,7 +270,8 @@ Stream Close
 
 Streams MUST explicitly closed with a CLOSE_STREAM frame indicating the stream ID and final offset of the stream to prevent zombie streams.
 (Alternative implementation option: RST_STREAM frame with error code NO_ERROR indicating the final offset).
-The the CLOSE_STREAM / RST_STREAM frame has to be resent if lost
+
+The the CLOSE_STREAM frame has to be resent if lost
 even if the stream frames of this stream are transmitted unreliably.
 
  - Once an endpoint has completed sending all stream data,
@@ -268,6 +286,38 @@ This reduces the code paths that cause state transitions from open
 to half-closed and eases state keeping for unreliable streams by
 having reliable signaling of closing unreliable stream.
 It comes with the caveat of increasing the minimal on-wire data of
-a stream by 16 bytes.
+a stream by at least four bytes.
 
 
+
+CLOSE_STREAM Frame
+------------------
+
+The CLOSE_STREAM frame indicates the final offset of a stream
+and therefore replaces the F bit.
+
+I uses a type value between 0x80 and 0x9f.
+The type byte for a CLOSE_STREAM frame contains embedded flags,
+and is formatted as "100RSSOO".  These bits are parsed as follows:
+
+ - The R bit is set to 1 for complete reliable streams and o 0 otherwise.
+
+ - The "SS" bits encode the length of the Stream ID header field.
+   The values 00, 01, 02, and 03 indicate lengths of 8, 16, 24, and
+   32 bits long respectively.
+
+ - The "OO" bits encode the length of the Offset header field.  The
+   values 00, 01, 02, and 03 indicate lengths of 0, 16, 32, and 64
+   bits long respectively.
+
+A CLOSE_STREAM frame is shown below.
+
+~~~~
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Stream ID (8/16/24/32)                   ...
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                 Final Offset (0/16/32/64)                   ...
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~
