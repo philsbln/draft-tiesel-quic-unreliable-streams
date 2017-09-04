@@ -17,7 +17,7 @@ author:
  -
     ins: P. S. Tiesel
     name: Philipp S. Tiesel
-    organization: Berlin Institute of Technology
+    organization: TU Berlin
     street: Marchstr. 23
     city: Berlin
     country: Germany
@@ -43,12 +43,17 @@ informative:
 
 --- abstract
 
-This memo outlines support for unreliable streams in QUIC.
-This draft contains a collection of considerations and requirements
-for unreliable streams in QUIC as well as a proposal how to implement
-unreliable streams within quic-draft-05.
-The intention of this document is to collect all unreliable streams
-considerations and framing till these can be merged in [I-D.draft-ietf-quic-transport], [I-D.draft-ietf-quic-recovery] and, [I-D.draft-ietf-quic-applicability].
+This memo outlines support for unreliable streams in QUIC. This draft
+contains a collection of considerations and requirements for unreliable
+streams in QUIC based on [I-D.draft-ietf-quic-transport]. It provides
+to alternatives demonstrating how unreliable streams can be realized.
+The intention of this document is to collect considerations regarding
+unreliable streams in QUIC and to frame the design space.
+All content of this memo is supposed to be merged into
+[I-D.draft-ietf-quic-transport], [I-D.draft-ietf-quic-recovery] and,
+[I-D.draft-ietf-quic-applicability] once unreliable streams get
+integrated with QUIC.
+
 
 
 --- middle
@@ -66,18 +71,14 @@ in {{RFC2119}}.
 Introduction        {#intro}
 ============
 
-There are many use cases for use cases for unreliable streams,
-especially in cases where an application has to meet deadlines for
-data delivery and have to avoid head of line blocking.
-But for many of these use cases, there is still a need to transmit
-some data, often control or meta data, reliably.
+There are many use cases for unreliable delivery of stream data, e.g., to meet deadlines for data delivery in the presence of short time congestion by avoiding head of line blocking.
+Still, some control data or metadata often needs to be transmitted reliably.
 
 This memo describes how QUIC can provide reliable and unreliable
-transmission within the same connection. We advocate to allow the
-application to request reliable or unreliable transmission in QUIC on
-a per stream level. As we do allow a QUIC implementation to retransmit
-unreliable stream frames, it is possible to implement a mix of reliable
-and unreliable transmission within the same, tagged unreliable, stream.
+transmission within the same connection. This model allows applications to request reliable or unreliable transmission in QUIC on
+a per stream level. For an unreliable stream, the QUIC implementation can decide which frames to retransmit.
+Thus, it is possible to implement a mix of reliable
+and unreliable transmission within the same stream.
 
 
 
@@ -87,16 +88,14 @@ Connection Level Considerations
 Unreliable Stream Support Negotiation
 ------------------------------------
 
-To keep the complexity of a minimal QUIC implementation low, the
-support of unreliable streams is optional.
+Support of unreliable streams is optional to reduce the complexity of minimal QUIC implementations.
+If the applications protocol makes no use of partial
+delivery of stream data, unreliable stream support should not be signaled on the connection.
+
 An endpoint signals its willingness to receiving unreliable stream
 frames during the TLS handshake using the transport parameter
 accept_unreliable_stream_frames (value TBD – used as flag the same
 way as omit_connection_id specified in [I-D.draft-ietf-quic-transport]).
-
-Connections on behalf of applications that make no use of partial
-delivery of stream data should not send accept_unreliable_stream_frames
-even if the QUIC implementation support it.
 
 
 
@@ -107,23 +106,23 @@ Stream Open
 -----------
 
 In addition to the stream open specified in [I-D.draft-ietf-quic-transport], an endpoint opening a stream
-MUST indicate whether the stream is reliable and therefore the
+MUST indicate whether the stream is reliable, and therefore the
 receiver can rely on the sender retransmitting lost stream data.
 
-We see two options how to indicate whether a stream is reliable or not:
+We anticipate two options how to indicate whether a stream is reliable or not:
 
  - Leave it completely to the application layer.
- - Indicate it in the stream frame header by repurposing the
-   'F' (FIN) bit as 'R' (RELIABLE) bit and indicate the stream close
+ - Indicate it in the stream frame header. This can be realized by repurposing the
+   'F' (FIN) bit as 'R' (RELIABLE) bit and signal the stream close
    using CLOSE_STREAM / RST_STREAM frames.
 
 See {{app_ind}} for a proposal specifying the former and
 {{str_ind}} for a proposal specifying the latter.
 
 The authors advocate for explicitly signaling unreliable streams in
-the stream frame header as it does not introduce additional
-interwinding between QUIC and the application and makes usage of
-unreliable streams for a limited amount of stream data much easier.
+the stream frame header, as it does not introduce additional
+interwinding between QUIC and the application.
+This reduces the complexity of applications where only some streams should be transmitted unreliably.
 
 
 Stream Close
@@ -132,7 +131,7 @@ Stream Close
 As frames of unreliable streams may not be retransmitted, the loss
 of a frame indicating the end of a stream may introduce zombie streams.
 
-A final protocol MUST make sure that either such a zombie state does
+A QUIC version with unreliable stream support MUST make sure that either such a zombie state does
 not occur (as the proposals in {{app_ind}} and {{str_ind}} do) or
 include a mechanism to clean up zombie streams, e.g. by using a
 window of active unreliable stream ids.
@@ -167,12 +166,12 @@ Retransmissions within Unreliable Streams
 
 While unreliable streams suggest just disabling retransmissions for
 these streams, applications my choose to apply arbitrary retransmission
-strategies for unreliable streams, e.g. retransmit stream data
+strategies for unreliable streams, e.g., retransmit stream data
 as long it will likely be delivered on-time with respect to an
 application provided deadline or only retransmit certain byte ranges.
 
-An QUIC implementation that implements retransmissions on a per-packet
-basis therefore may retransmit unreliable stream data even if not
+A QUIC implementation that implements retransmissions on a per-packet
+basis, therefore, may retransmit unreliable stream data even if not
 requested by the application.
 
 
@@ -184,7 +183,7 @@ The presentation of unreliable streams is application specific.
 The anticipated use cases include:
 
  - Data being delivered annotated with its offset as it is received.
- - Data being delivered after a deadline, e.g. with an annotated list of holes and byte ranges of lost data filled with zeros.
+ - Data being delivered after a deadline, e.g., with an annotated list of holes and byte ranges of lost data filled with zeros.
 
 
 Prioritization of Unreliable Streams
@@ -219,7 +218,7 @@ TBD
 
 --- back
 
-Proposal with application layer indicated relniabliliy {#app_ind}
+Proposal with Application Layer Indicated Reliabliliy {#app_ind}
 ===========================
 
 This implementation proposal lets the decision and indication of
@@ -234,9 +233,9 @@ Stream Close
 ------------
 
 As frames of unreliable streams may not be retransmitted, the loss
-of a unreliable stream frame carrying a FIN bit may lead to zombie
+of an unreliable stream frame carrying a FIN bit may lead to zombie
 streams.
-To prevent this this STREAM fames carrying the FIN bit MUST to
+To prevent zombie streams, STREAM frames carrying the FIN bit MUST
 be retransmitted if lost regardless whether a stream is reliable or not.
 
 
@@ -244,7 +243,7 @@ be retransmitted if lost regardless whether a stream is reliable or not.
 Proposal with stream frame indicated relniabliliy {#str_ind}
 ===========================
 
-This implementation proposal repurposes the 'F' (FIN) bit
+This implementation proposal repurposes the 'F' (FIN) bit of the 'type' field
 from  [I-D.draft-ietf-quic-transport] as 'R'(RELIABLE) bit and
 indicates the stream close using CLOSE_STREAM / RST_STREAM frames.
 
@@ -256,11 +255,9 @@ byte for a STREAM frame to 1.
  - The sender opening an unreliable stream must set 'R' bit of the type
 byte for a STREAM frame to 0.
 
-A client that has not indicated its willingness to receive
-unreliable stream frames as using the transport parameter
-accept_unreliable_stream_frames MUST answer with a RST_STREAM frame
-indicating a STREAM_STATE_ERROR when receiving a STREAM frame having
-the 'R' bit not set.
+When receiving a STREAM frame having
+the 'R' bit not set, a client that has not advertised support for unreliable streams in the handshake MUST answer with a RST_STREAM frame
+indicating a STREAM_STATE_ERROR.
 
 All frames of a stream MUST have the R bit to the same value.
 
@@ -268,11 +265,11 @@ All frames of a stream MUST have the R bit to the same value.
 Stream Close
 ------------
 
-Streams MUST explicitly closed with a CLOSE_STREAM frame indicating the stream ID and final offset of the stream to prevent zombie streams.
+Streams MUST be explicitly closed with a CLOSE_STREAM frame indicating the stream ID and final offset of the stream to prevent zombie streams.
 (Alternative implementation option: RST_STREAM frame with error code NO_ERROR indicating the final offset).
 
 The the CLOSE_STREAM frame has to be resent if lost
-even if the stream frames of this stream are transmitted unreliably.
+even if  stream frames of this stream are transmitted unreliably.
 
  - Once an endpoint has completed sending all stream data,
    it sends a CLOSE_STREAM frame.
@@ -296,11 +293,11 @@ CLOSE_STREAM Frame
 The CLOSE_STREAM frame indicates the final offset of a stream
 and therefore replaces the F bit.
 
-I uses a type value between 0x80 and 0x9f.
+It uses a type value between 0x80 and 0x9f.
 The type byte for a CLOSE_STREAM frame contains embedded flags,
 and is formatted as "100RSSOO".  These bits are parsed as follows:
 
- - The R bit is set to 1 for complete reliable streams and o 0 otherwise.
+ - The R bit is set to 1 for reliable streams and to 0 otherwise.
 
  - The "SS" bits encode the length of the Stream ID header field.
    The values 00, 01, 02, and 03 indicate lengths of 8, 16, 24, and
