@@ -292,7 +292,7 @@ address {
 <link href="#rfc.section.6" rel="Chapter" title="6 Security Considerations"/>
 <link href="#rfc.section.7" rel="Chapter" title="7 IANA Considerations"/>
 <link href="#rfc.references" rel="Chapter" title="8 Informative References"/>
-<link href="#rfc.appendix.A" rel="Chapter" title="A Proposal with application layer indicated relniabliliy"/>
+<link href="#rfc.appendix.A" rel="Chapter" title="A Proposal with Application Layer Indicated Reliabliliy"/>
 <link href="#rfc.appendix.A.1" rel="Chapter" title="A.1 Stream Close"/>
 <link href="#rfc.appendix.B" rel="Chapter" title="B Proposal with stream frame indicated relniabliliy"/>
 <link href="#rfc.appendix.B.1" rel="Chapter" title="B.1 Stream Open"/>
@@ -307,8 +307,8 @@ address {
   <meta name="dct.creator" content="Tiesel, P. and J. Ott" />
   <meta name="dct.identifier" content="urn:ietf:id:draft-tiesel-quic-unreliable-streams-latest" />
   <meta name="dct.issued" scheme="ISO8601" content="2017-6-27" />
-  <meta name="dct.abstract" content="This memo outlines support for unreliable streams in QUIC.  This draft contains a collection of considerations and requirements for unreliable streams in QUIC as well as a proposal how to implement unreliable streams within quic-draft-05.  The intention of this document is to collect all unreliable streams considerations and framing till these can be merged in [I-D.draft-ietf-quic-transport], [I-D.draft-ietf-quic-recovery] and, [I-D.draft-ietf-quic-applicability]." />
-  <meta name="description" content="This memo outlines support for unreliable streams in QUIC.  This draft contains a collection of considerations and requirements for unreliable streams in QUIC as well as a proposal how to implement unreliable streams within quic-draft-05.  The intention of this document is to collect all unreliable streams considerations and framing till these can be merged in [I-D.draft-ietf-quic-transport], [I-D.draft-ietf-quic-recovery] and, [I-D.draft-ietf-quic-applicability]." />
+  <meta name="dct.abstract" content="This memo outlines support for unreliable streams in QUIC. This draft contains a collection of considerations and requirements for unreliable streams in QUIC based on [I-D.draft-ietf-quic-transport]. It provides to alternatives demonstrating how unreliable streams can be realized.  The intention of this document is to collect considerations regarding unreliable streams in QUIC and to frame the design space.  All content of this memo is supposed to be merged into [I-D.draft-ietf-quic-transport], [I-D.draft-ietf-quic-recovery] and, [I-D.draft-ietf-quic-applicability] once unreliable streams get integrated with QUIC." />
+  <meta name="description" content="This memo outlines support for unreliable streams in QUIC. This draft contains a collection of considerations and requirements for unreliable streams in QUIC based on [I-D.draft-ietf-quic-transport]. It provides to alternatives demonstrating how unreliable streams can be realized.  The intention of this document is to collect considerations regarding unreliable streams in QUIC and to frame the design space.  All content of this memo is supposed to be merged into [I-D.draft-ietf-quic-transport], [I-D.draft-ietf-quic-recovery] and, [I-D.draft-ietf-quic-applicability] once unreliable streams get integrated with QUIC." />
 
 </head>
 
@@ -323,7 +323,7 @@ address {
 </tr>
 <tr>
   <td class="left">Internet-Draft</td>
-  <td class="right">Berlin Institute of Technology</td>
+  <td class="right">TU Berlin</td>
 </tr>
 <tr>
   <td class="left">Intended status: Informational</td>
@@ -348,7 +348,7 @@ address {
   <h1 id="rfc.abstract">
   <a href="#rfc.abstract">Abstract</a>
 </h1>
-<p>This memo outlines support for unreliable streams in QUIC.  This draft contains a collection of considerations and requirements for unreliable streams in QUIC as well as a proposal how to implement unreliable streams within quic-draft-05.  The intention of this document is to collect all unreliable streams considerations and framing till these can be merged in [I-D.draft-ietf-quic-transport], [I-D.draft-ietf-quic-recovery] and, [I-D.draft-ietf-quic-applicability].</p>
+<p>This memo outlines support for unreliable streams in QUIC. This draft contains a collection of considerations and requirements for unreliable streams in QUIC based on [I-D.draft-ietf-quic-transport]. It provides to alternatives demonstrating how unreliable streams can be realized.  The intention of this document is to collect considerations regarding unreliable streams in QUIC and to frame the design space.  All content of this memo is supposed to be merged into [I-D.draft-ietf-quic-transport], [I-D.draft-ietf-quic-recovery] and, [I-D.draft-ietf-quic-applicability] once unreliable streams get integrated with QUIC.</p>
 <h1 id="rfc.status">
   <a href="#rfc.status">Status of This Memo</a>
 </h1>
@@ -384,7 +384,7 @@ address {
 </ul><li>6.   <a href="#rfc.section.6">Security Considerations</a></li>
 <li>7.   <a href="#rfc.section.7">IANA Considerations</a></li>
 <li>8.   <a href="#rfc.references">Informative References</a></li>
-<li>Appendix A.   <a href="#rfc.appendix.A">Proposal with application layer indicated relniabliliy</a></li>
+<li>Appendix A.   <a href="#rfc.appendix.A">Proposal with Application Layer Indicated Reliabliliy</a></li>
 <ul><li>A.1.   <a href="#rfc.appendix.A.1">Stream Close</a></li>
 </ul><li>Appendix B.   <a href="#rfc.appendix.B">Proposal with stream frame indicated relniabliliy</a></li>
 <ul><li>B.1.   <a href="#rfc.appendix.B.1">Stream Open</a></li>
@@ -398,27 +398,27 @@ address {
   <h1 id="rfc.section.1"><a href="#rfc.section.1">1.</a> <a href="#conventions-and-definitions" id="conventions-and-definitions">Conventions and Definitions</a></h1>
 <p id="rfc.section.1.p.1">The words &#8220;MUST&#8221;, &#8220;MUST NOT&#8221;, &#8220;SHALL&#8221;, &#8220;SHALL NOT&#8221;, &#8220;SHOULD&#8221;, and &#8220;MAY&#8221; are used in this document. It&#8217;s not shouting; when these words are capitalized, they have a special meaning as defined in <a href="#RFC2119">[RFC2119]</a>.</p>
 <h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a> <a href="#intro" id="intro">Introduction</a></h1>
-<p id="rfc.section.2.p.1">There are many use cases for use cases for unreliable streams, especially in cases where an application has to meet deadlines for data delivery and have to avoid head of line blocking.  But for many of these use cases, there is still a need to transmit some data, often control or meta data, reliably.</p>
-<p id="rfc.section.2.p.2">This memo describes how QUIC can provide reliable and unreliable transmission within the same connection. We advocate to allow the application to request reliable or unreliable transmission in QUIC on a per stream level. As we do allow a QUIC implementation to retransmit unreliable stream frames, it is possible to implement a mix of reliable and unreliable transmission within the same, tagged unreliable, stream.</p>
+<p id="rfc.section.2.p.1">There are many use cases for unreliable delivery of stream data, e.g., to meet deadlines for data delivery in the presence of short time congestion by avoiding head of line blocking.  Still, some control data or metadata often needs to be transmitted reliably.</p>
+<p id="rfc.section.2.p.2">This memo describes how QUIC can provide reliable and unreliable transmission within the same connection. This model allows applications to request reliable or unreliable transmission in QUIC on a per stream level. For an unreliable stream, the QUIC implementation can decide which frames to retransmit.  Thus, it is possible to implement a mix of reliable and unreliable transmission within the same stream.</p>
 <h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a> <a href="#connection-level-considerations" id="connection-level-considerations">Connection Level Considerations</a></h1>
 <h1 id="rfc.section.3.1"><a href="#rfc.section.3.1">3.1.</a> <a href="#unreliable-stream-support-negotiation" id="unreliable-stream-support-negotiation">Unreliable Stream Support Negotiation</a></h1>
-<p id="rfc.section.3.1.p.1">To keep the complexity of a minimal QUIC implementation low, the support of unreliable streams is optional.  An endpoint signals its willingness to receiving unreliable stream frames during the TLS handshake using the transport parameter accept_unreliable_stream_frames (value TBD &#8211; used as flag the same way as omit_connection_id specified in [I-D.draft-ietf-quic-transport]).</p>
-<p id="rfc.section.3.1.p.2">Connections on behalf of applications that make no use of partial delivery of stream data should not send accept_unreliable_stream_frames even if the QUIC implementation support it.</p>
+<p id="rfc.section.3.1.p.1">Support of unreliable streams is optional to reduce the complexity of minimal QUIC implementations.  If the applications protocol makes no use of partial delivery of stream data, unreliable stream support should not be signaled on the connection.</p>
+<p id="rfc.section.3.1.p.2">An endpoint signals its willingness to receiving unreliable stream frames during the TLS handshake using the transport parameter accept_unreliable_stream_frames (value TBD &#8211; used as flag the same way as omit_connection_id specified in [I-D.draft-ietf-quic-transport]).</p>
 <h1 id="rfc.section.4"><a href="#rfc.section.4">4.</a> <a href="#stream-level-considerations" id="stream-level-considerations">Stream Level Considerations</a></h1>
 <h1 id="rfc.section.4.1"><a href="#rfc.section.4.1">4.1.</a> <a href="#stream-open" id="stream-open">Stream Open</a></h1>
-<p id="rfc.section.4.1.p.1">In addition to the stream open specified in [I-D.draft-ietf-quic-transport], an endpoint opening a stream MUST indicate whether the stream is reliable and therefore the receiver can rely on the sender retransmitting lost stream data.</p>
-<p id="rfc.section.4.1.p.2">We see two options how to indicate whether a stream is reliable or not:</p>
+<p id="rfc.section.4.1.p.1">In addition to the stream open specified in [I-D.draft-ietf-quic-transport], an endpoint opening a stream MUST indicate whether the stream is reliable, and therefore the receiver can rely on the sender retransmitting lost stream data.</p>
+<p id="rfc.section.4.1.p.2">We anticipate two options how to indicate whether a stream is reliable or not:</p>
 <p/>
 
 <ul>
   <li>Leave it completely to the application layer.</li>
-  <li>Indicate it in the stream frame header by repurposing the &#8216;F&#8217; (FIN) bit as &#8216;R&#8217; (RELIABLE) bit and indicate the stream close using CLOSE_STREAM / RST_STREAM frames.</li>
+  <li>Indicate it in the stream frame header. This can be realized by repurposing the &#8216;F&#8217; (FIN) bit as &#8216;R&#8217; (RELIABLE) bit and signal the stream close using CLOSE_STREAM / RST_STREAM frames.</li>
 </ul>
 <p id="rfc.section.4.1.p.4">See <a href="#app_ind">Appendix A</a> for a proposal specifying the former and <a href="#str_ind">Appendix B</a> for a proposal specifying the latter.</p>
-<p id="rfc.section.4.1.p.5">The authors advocate for explicitly signaling unreliable streams in the stream frame header as it does not introduce additional interwinding between QUIC and the application and makes usage of unreliable streams for a limited amount of stream data much easier.</p>
+<p id="rfc.section.4.1.p.5">The authors advocate for explicitly signaling unreliable streams in the stream frame header, as it does not introduce additional interwinding between QUIC and the application.  This reduces the complexity of applications where only some streams should be transmitted unreliably.</p>
 <h1 id="rfc.section.4.2"><a href="#rfc.section.4.2">4.2.</a> <a href="#stream-close" id="stream-close">Stream Close</a></h1>
 <p id="rfc.section.4.2.p.1">As frames of unreliable streams may not be retransmitted, the loss of a frame indicating the end of a stream may introduce zombie streams.</p>
-<p id="rfc.section.4.2.p.2">A final protocol MUST make sure that either such a zombie state does not occur (as the proposals in <a href="#app_ind">Appendix A</a> and <a href="#str_ind">Appendix B</a> do) or include a mechanism to clean up zombie streams, e.g. by using a window of active unreliable stream ids.</p>
+<p id="rfc.section.4.2.p.2">A QUIC version with unreliable stream support MUST make sure that either such a zombie state does not occur (as the proposals in <a href="#app_ind">Appendix A</a> and <a href="#str_ind">Appendix B</a> do) or include a mechanism to clean up zombie streams, e.g. by using a window of active unreliable stream ids.</p>
 <h1 id="rfc.section.4.3"><a href="#rfc.section.4.3">4.3.</a> <a href="#stream-id-0x0" id="stream-id-0x0">Stream ID 0x0</a></h1>
 <p id="rfc.section.4.3.p.1">Data of stream 0x0 MUST be transmitted reliably as TLS expects reliable transmission.</p>
 <h1 id="rfc.section.4.4"><a href="#rfc.section.4.4">4.4.</a> <a href="#congestion-control-on-unreliable-streams" id="congestion-control-on-unreliable-streams">Congestion Control on Unreliable Streams</a></h1>
@@ -427,8 +427,8 @@ address {
 <p id="rfc.section.4.5.p.1">Unreliable streams are subject to regular flow control on connection and stream level.</p>
 <h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a> <a href="#application-interface-considerations" id="application-interface-considerations">Application Interface Considerations</a></h1>
 <h1 id="rfc.section.5.1"><a href="#rfc.section.5.1">5.1.</a> <a href="#retransmissions-within-unreliable-streams" id="retransmissions-within-unreliable-streams">Retransmissions within Unreliable Streams</a></h1>
-<p id="rfc.section.5.1.p.1">While unreliable streams suggest just disabling retransmissions for these streams, applications my choose to apply arbitrary retransmission strategies for unreliable streams, e.g. retransmit stream data as long it will likely be delivered on-time with respect to an application provided deadline or only retransmit certain byte ranges.</p>
-<p id="rfc.section.5.1.p.2">An QUIC implementation that implements retransmissions on a per-packet basis therefore may retransmit unreliable stream data even if not requested by the application.</p>
+<p id="rfc.section.5.1.p.1">While unreliable streams suggest just disabling retransmissions for these streams, applications my choose to apply arbitrary retransmission strategies for unreliable streams, e.g., retransmit stream data as long it will likely be delivered on-time with respect to an application provided deadline or only retransmit certain byte ranges.</p>
+<p id="rfc.section.5.1.p.2">A QUIC implementation that implements retransmissions on a per-packet basis, therefore, may retransmit unreliable stream data even if not requested by the application.</p>
 <h1 id="rfc.section.5.2"><a href="#rfc.section.5.2">5.2.</a> <a href="#presentation-of-unreliable-streams" id="presentation-of-unreliable-streams">Presentation of Unreliable Streams</a></h1>
 <p id="rfc.section.5.2.p.1">The presentation of unreliable streams is application specific.</p>
 <p id="rfc.section.5.2.p.2">The anticipated use cases include:</p>
@@ -436,7 +436,7 @@ address {
 
 <ul>
   <li>Data being delivered annotated with its offset as it is received.</li>
-  <li>Data being delivered after a deadline, e.g. with an annotated list of holes and byte ranges of lost data filled with zeros.</li>
+  <li>Data being delivered after a deadline, e.g., with an annotated list of holes and byte ranges of lost data filled with zeros.</li>
 </ul>
 <h1 id="rfc.section.5.3"><a href="#rfc.section.5.3">5.3.</a> <a href="#prioritization-of-unreliable-streams" id="prioritization-of-unreliable-streams">Prioritization of Unreliable Streams</a></h1>
 <p id="rfc.section.5.3.p.1">Unreliable streams are not prioritized in any special way.</p>
@@ -482,12 +482,12 @@ address {
     </tr>
   </tbody>
 </table>
-<h1 id="rfc.appendix.A"><a href="#rfc.appendix.A">Appendix A.</a> <a href="#app_ind" id="app_ind">Proposal with application layer indicated relniabliliy</a></h1>
+<h1 id="rfc.appendix.A"><a href="#rfc.appendix.A">Appendix A.</a> <a href="#app_ind" id="app_ind">Proposal with Application Layer Indicated Reliabliliy</a></h1>
 <p id="rfc.section.A.p.1">This implementation proposal lets the decision and indication of unreliable transmission completely to the application.  In this proposal, the state space and error handling for applications can become quite complex when control messages at the start of a stream are transmitted unreliably.  The advantage of this implementation proposal requiring only minimal changes to [I-D.draft-ietf-quic-transport] and [I-D.draft-ietf-quic-recovery].</p>
 <h1 id="rfc.appendix.A.1"><a href="#rfc.appendix.A.1">A.1.</a> <a href="#stream-close-1" id="stream-close-1">Stream Close</a></h1>
-<p id="rfc.section.A.1.p.1">As frames of unreliable streams may not be retransmitted, the loss of a unreliable stream frame carrying a FIN bit may lead to zombie streams.  To prevent this this STREAM fames carrying the FIN bit MUST to be retransmitted if lost regardless whether a stream is reliable or not.</p>
+<p id="rfc.section.A.1.p.1">As frames of unreliable streams may not be retransmitted, the loss of an unreliable stream frame carrying a FIN bit may lead to zombie streams.  To prevent zombie streams, STREAM frames carrying the FIN bit MUST be retransmitted if lost regardless whether a stream is reliable or not.</p>
 <h1 id="rfc.appendix.B"><a href="#rfc.appendix.B">Appendix B.</a> <a href="#str_ind" id="str_ind">Proposal with stream frame indicated relniabliliy</a></h1>
-<p id="rfc.section.B.p.1">This implementation proposal repurposes the &#8216;F&#8217; (FIN) bit from  [I-D.draft-ietf-quic-transport] as &#8216;R&#8217;(RELIABLE) bit and indicates the stream close using CLOSE_STREAM / RST_STREAM frames.</p>
+<p id="rfc.section.B.p.1">This implementation proposal repurposes the &#8216;F&#8217; (FIN) bit of the &#8216;type&#8217; field from  [I-D.draft-ietf-quic-transport] as &#8216;R&#8217;(RELIABLE) bit and indicates the stream close using CLOSE_STREAM / RST_STREAM frames.</p>
 <h1 id="rfc.appendix.B.1"><a href="#rfc.appendix.B.1">B.1.</a> <a href="#stream-open-1" id="stream-open-1">Stream Open</a></h1>
 <p/>
 
@@ -495,11 +495,11 @@ address {
   <li>The sender opening an reliable stream must set &#8216;R&#8217; bit of the type byte for a STREAM frame to 1.</li>
   <li>The sender opening an unreliable stream must set &#8216;R&#8217; bit of the type byte for a STREAM frame to 0.</li>
 </ul>
-<p id="rfc.section.B.1.p.2">A client that has not indicated its willingness to receive unreliable stream frames as using the transport parameter accept_unreliable_stream_frames MUST answer with a RST_STREAM frame indicating a STREAM_STATE_ERROR when receiving a STREAM frame having the &#8216;R&#8217; bit not set.</p>
+<p id="rfc.section.B.1.p.2">When receiving a STREAM frame having the &#8216;R&#8217; bit not set, a client that has not advertised support for unreliable streams in the handshake MUST answer with a RST_STREAM frame indicating a STREAM_STATE_ERROR.</p>
 <p id="rfc.section.B.1.p.3">All frames of a stream MUST have the R bit to the same value.</p>
 <h1 id="rfc.appendix.B.2"><a href="#rfc.appendix.B.2">B.2.</a> <a href="#stream-close-2" id="stream-close-2">Stream Close</a></h1>
-<p id="rfc.section.B.2.p.1">Streams MUST explicitly closed with a CLOSE_STREAM frame indicating the stream ID and final offset of the stream to prevent zombie streams.  (Alternative implementation option: RST_STREAM frame with error code NO_ERROR indicating the final offset).</p>
-<p id="rfc.section.B.2.p.2">The the CLOSE_STREAM frame has to be resent if lost even if the stream frames of this stream are transmitted unreliably.</p>
+<p id="rfc.section.B.2.p.1">Streams MUST be explicitly closed with a CLOSE_STREAM frame indicating the stream ID and final offset of the stream to prevent zombie streams.  (Alternative implementation option: RST_STREAM frame with error code NO_ERROR indicating the final offset).</p>
+<p id="rfc.section.B.2.p.2">The the CLOSE_STREAM frame has to be resent if lost even if  stream frames of this stream are transmitted unreliably.</p>
 <p/>
 
 <ul>
@@ -509,11 +509,11 @@ address {
 <p id="rfc.section.B.2.p.4">This reduces the code paths that cause state transitions from open to half-closed and eases state keeping for unreliable streams by having reliable signaling of closing unreliable stream.  It comes with the caveat of increasing the minimal on-wire data of a stream by at least four bytes.</p>
 <h1 id="rfc.appendix.B.3"><a href="#rfc.appendix.B.3">B.3.</a> <a href="#closestream-frame" id="closestream-frame">CLOSE_STREAM Frame</a></h1>
 <p id="rfc.section.B.3.p.1">The CLOSE_STREAM frame indicates the final offset of a stream and therefore replaces the F bit.</p>
-<p id="rfc.section.B.3.p.2">I uses a type value between 0x80 and 0x9f.  The type byte for a CLOSE_STREAM frame contains embedded flags, and is formatted as &#8220;100RSSOO&#8221;.  These bits are parsed as follows:</p>
+<p id="rfc.section.B.3.p.2">It uses a type value between 0x80 and 0x9f.  The type byte for a CLOSE_STREAM frame contains embedded flags, and is formatted as &#8220;100RSSOO&#8221;.  These bits are parsed as follows:</p>
 <p/>
 
 <ul>
-  <li>The R bit is set to 1 for complete reliable streams and o 0 otherwise.</li>
+  <li>The R bit is set to 1 for reliable streams and to 0 otherwise.</li>
   <li>The &#8220;SS&#8221; bits encode the length of the Stream ID header field.  The values 00, 01, 02, and 03 indicate lengths of 8, 16, 24, and 32 bits long respectively.</li>
   <li>The &#8220;OO&#8221; bits encode the length of the Offset header field.  The values 00, 01, 02, and 03 indicate lengths of 0, 16, 32, and 64 bits long respectively.</li>
 </ul>
@@ -538,7 +538,7 @@ address {
 		<span class="family-name">Tiesel</span>
 	  </span>
 	</span>
-	<span class="org vcardline">Berlin Institute of Technology</span>
+	<span class="org vcardline">TU Berlin</span>
 	<span class="adr">
 	  <span class="vcardline">Marchstr. 23</span>
 
