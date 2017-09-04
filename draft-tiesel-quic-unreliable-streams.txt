@@ -3,9 +3,12 @@
 
 
 QUIC Working Group                                             P. Tiesel
-Internet-Draft                                                 TU Berlin
-Intended status: Informational                                    J. Ott
-Expires: December 29, 2017                                     TU Munich
+Internet-Draft                                                 M. Palmer
+Intended status: Informational                         B. Chandrasekaran
+Expires: December 29, 2017                                   A. Feldmann
+                                                               TU Berlin
+                                                                  J. Ott
+                                                               TU Munich
                                                            June 27, 2017
 
 
@@ -47,17 +50,17 @@ Copyright Notice
    Copyright (c) 2017 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
-   This document is subject to BCP 78 and the IETF Trust's Legal
-   Provisions Relating to IETF Documents
-   (http://trustee.ietf.org/license-info) in effect on the date of
 
 
 
-Tiesel & Ott            Expires December 29, 2017               [Page 1]
+Tiesel, et al.          Expires December 29, 2017               [Page 1]
 
 Internet-Draft           QUIC Unreliable Streams               June 2017
 
 
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (http://trustee.ietf.org/license-info) in effect on the date of
    publication of this document.  Please review these documents
    carefully, as they describe your rights and restrictions with respect
    to this document.  Code Components extracted from this document must
@@ -68,7 +71,7 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
 Table of Contents
 
    1.  Conventions and Definitions . . . . . . . . . . . . . . . . .   2
-   2.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+   2.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
    3.  Connection Level Considerations . . . . . . . . . . . . . . .   3
      3.1.  Unreliable Stream Support Negotiation . . . . . . . . . .   3
    4.  Stream Level Considerations . . . . . . . . . . . . . . . . .   3
@@ -88,7 +91,7 @@ Table of Contents
                 Reliabliliy  . . . . . . . . . . . . . . . . . . . .   6
      A.1.  Stream Close  . . . . . . . . . . . . . . . . . . . . . .   6
    Appendix B.  Proposal with stream frame indicated relniabliliy  .   6
-     B.1.  Stream Open . . . . . . . . . . . . . . . . . . . . . . .   6
+     B.1.  Stream Open . . . . . . . . . . . . . . . . . . . . . . .   7
      B.2.  Stream Close  . . . . . . . . . . . . . . . . . . . . . .   7
      B.3.  CLOSE_STREAM Frame  . . . . . . . . . . . . . . . . . . .   7
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   8
@@ -99,20 +102,24 @@ Table of Contents
    "MAY" are used in this document.  It's not shouting; when these words
    are capitalized, they have a special meaning as defined in [RFC2119].
 
+
+
+
+
+
+
+
+Tiesel, et al.          Expires December 29, 2017               [Page 2]
+
+Internet-Draft           QUIC Unreliable Streams               June 2017
+
+
 2.  Introduction
 
    There are many use cases for unreliable delivery of stream data,
    e.g., to meet deadlines for data delivery in the presence of short
    time congestion by avoiding head of line blocking.  Still, some
    control data or metadata often needs to be transmitted reliably.
-
-
-
-
-Tiesel & Ott            Expires December 29, 2017               [Page 2]
-
-Internet-Draft           QUIC Unreliable Streams               June 2017
-
 
    This memo describes how QUIC can provide reliable and unreliable
    transmission within the same connection.  This model allows
@@ -155,21 +162,20 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
       repurposing the 'F' (FIN) bit as 'R' (RELIABLE) bit and signal the
       stream close using CLOSE_STREAM / RST_STREAM frames.
 
+
+
+
+Tiesel, et al.          Expires December 29, 2017               [Page 3]
+
+Internet-Draft           QUIC Unreliable Streams               June 2017
+
+
    See Appendix A for a proposal specifying the former and Appendix B
    for a proposal specifying the latter.
 
    The authors advocate for explicitly signaling unreliable streams in
    the stream frame header, as it does not introduce additional
    interwinding between QUIC and the application.  This reduces the
-
-
-
-
-Tiesel & Ott            Expires December 29, 2017               [Page 3]
-
-Internet-Draft           QUIC Unreliable Streams               June 2017
-
-
    complexity of applications where only some streams should be
    transmitted unreliably.
 
@@ -211,20 +217,18 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
    to an application provided deadline or only retransmit certain byte
    ranges.
 
-   A QUIC implementation that implements retransmissions on a per-packet
-   basis, therefore, may retransmit unreliable stream data even if not
-   requested by the application.
 
 
 
 
-
-
-
-Tiesel & Ott            Expires December 29, 2017               [Page 4]
+Tiesel, et al.          Expires December 29, 2017               [Page 4]
 
 Internet-Draft           QUIC Unreliable Streams               June 2017
 
+
+   A QUIC implementation that implements retransmissions on a per-packet
+   basis, therefore, may retransmit unreliable stream data even if not
+   requested by the application.
 
 5.2.  Presentation of Unreliable Streams
 
@@ -267,20 +271,21 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
 
 8.  Informative References
 
+
+
+
+
+
+
+Tiesel, et al.          Expires December 29, 2017               [Page 5]
+
+Internet-Draft           QUIC Unreliable Streams               June 2017
+
+
    [I-D.draft-ietf-quic-applicability-00]
               Kuehlewind, M. and B. Trammell, "Applicability of the QUIC
               Transport Protocol", draft-ietf-quic-applicability-00
               (work in progress), July 2017.
-
-
-
-
-
-
-Tiesel & Ott            Expires December 29, 2017               [Page 5]
-
-Internet-Draft           QUIC Unreliable Streams               June 2017
-
 
    [I-D.draft-ietf-quic-recovery-04]
               Iyengar, J. and I. Swett, "QUIC Loss Detection and
@@ -322,6 +327,17 @@ Appendix B.  Proposal with stream frame indicated relniabliliy
    bit and indicates the stream close using CLOSE_STREAM / RST_STREAM
    frames.
 
+
+
+
+
+
+
+Tiesel, et al.          Expires December 29, 2017               [Page 6]
+
+Internet-Draft           QUIC Unreliable Streams               June 2017
+
+
 B.1.  Stream Open
 
    o  The sender opening an reliable stream must set 'R' bit of the type
@@ -329,14 +345,6 @@ B.1.  Stream Open
 
    o  The sender opening an unreliable stream must set 'R' bit of the
       type byte for a STREAM frame to 0.
-
-
-
-
-Tiesel & Ott            Expires December 29, 2017               [Page 6]
-
-Internet-Draft           QUIC Unreliable Streams               June 2017
-
 
    When receiving a STREAM frame having the 'R' bit not set, a client
    that has not advertised support for unreliable streams in the
@@ -379,20 +387,18 @@ B.3.  CLOSE_STREAM Frame
    CLOSE_STREAM frame contains embedded flags, and is formatted as
    "100RSSOO".  These bits are parsed as follows:
 
+
+
+Tiesel, et al.          Expires December 29, 2017               [Page 7]
+
+Internet-Draft           QUIC Unreliable Streams               June 2017
+
+
    o  The R bit is set to 1 for reliable streams and to 0 otherwise.
 
    o  The "SS" bits encode the length of the Stream ID header field.
       The values 00, 01, 02, and 03 indicate lengths of 8, 16, 24, and
       32 bits long respectively.
-
-
-
-
-
-Tiesel & Ott            Expires December 29, 2017               [Page 7]
-
-Internet-Draft           QUIC Unreliable Streams               June 2017
-
 
    o  The "OO" bits encode the length of the Offset header field.  The
       values 00, 01, 02, and 03 indicate lengths of 0, 16, 32, and 64
@@ -417,6 +423,40 @@ Authors' Addresses
    Germany
 
    Email: philipp@inet.tu-berlin.de
+
+
+   Mirko Palmer
+   TU Berlin
+   Marchstr. 23
+   Berlin
+   Germany
+
+   Email: mirko@inet.tu-berlin.de
+
+
+   Balakrishnan Chandrasekaran
+   TU Berlin
+   Marchstr. 23
+   Berlin
+   Germany
+
+   Email: balac@inet.tu-berlin.de>
+
+
+
+
+Tiesel, et al.          Expires December 29, 2017               [Page 8]
+
+Internet-Draft           QUIC Unreliable Streams               June 2017
+
+
+   Anja Feldmann
+   TU Berlin
+   Marchstr. 23
+   Berlin
+   Germany
+
+   Email: anja@inet.tu-berlin.de
 
 
    Joerg Ott
@@ -445,4 +485,20 @@ Authors' Addresses
 
 
 
-Tiesel & Ott            Expires December 29, 2017               [Page 8]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Tiesel, et al.          Expires December 29, 2017               [Page 9]
