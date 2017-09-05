@@ -5,11 +5,11 @@
 QUIC Working Group                                             P. Tiesel
 Internet-Draft                                                 M. Palmer
 Intended status: Informational                         B. Chandrasekaran
-Expires: December 29, 2017                                   A. Feldmann
+Expires: March 9, 2018                                       A. Feldmann
                                                                TU Berlin
                                                                   J. Ott
                                                                TU Munich
-                                                           June 27, 2017
+                                                      September 05, 2017
 
 
              Considerations for Unreliable Streams in QUIC
@@ -43,7 +43,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on December 29, 2017.
+   This Internet-Draft will expire on March 9, 2018.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Tiesel, et al.          Expires December 29, 2017               [Page 1]
+Tiesel, et al.            Expires March 9, 2018                 [Page 1]
 
-Internet-Draft           QUIC Unreliable Streams               June 2017
+Internet-Draft           QUIC Unreliable Streams          September 2017
 
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Tiesel, et al.          Expires December 29, 2017               [Page 2]
+Tiesel, et al.            Expires March 9, 2018                 [Page 2]
 
-Internet-Draft           QUIC Unreliable Streams               June 2017
+Internet-Draft           QUIC Unreliable Streams          September 2017
 
 
 2.  Introduction
@@ -165,9 +165,9 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
 
 
 
-Tiesel, et al.          Expires December 29, 2017               [Page 3]
+Tiesel, et al.            Expires March 9, 2018                 [Page 3]
 
-Internet-Draft           QUIC Unreliable Streams               June 2017
+Internet-Draft           QUIC Unreliable Streams          September 2017
 
 
    See Appendix A for a proposal specifying the former and Appendix B
@@ -221,9 +221,9 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
 
 
 
-Tiesel, et al.          Expires December 29, 2017               [Page 4]
+Tiesel, et al.            Expires March 9, 2018                 [Page 4]
 
-Internet-Draft           QUIC Unreliable Streams               June 2017
+Internet-Draft           QUIC Unreliable Streams          September 2017
 
 
    A QUIC implementation that implements retransmissions on a per-packet
@@ -277,9 +277,9 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
 
 
 
-Tiesel, et al.          Expires December 29, 2017               [Page 5]
+Tiesel, et al.            Expires March 9, 2018                 [Page 5]
 
-Internet-Draft           QUIC Unreliable Streams               June 2017
+Internet-Draft           QUIC Unreliable Streams          September 2017
 
 
    [I-D.draft-ietf-quic-applicability-00]
@@ -333,9 +333,9 @@ Appendix B.  Proposal with Stream Frame Indicated Reliability
 
 
 
-Tiesel, et al.          Expires December 29, 2017               [Page 6]
+Tiesel, et al.            Expires March 9, 2018                 [Page 6]
 
-Internet-Draft           QUIC Unreliable Streams               June 2017
+Internet-Draft           QUIC Unreliable Streams          September 2017
 
 
 B.1.  Stream Open
@@ -389,9 +389,9 @@ B.3.  CLOSE_STREAM Frame
 
 
 
-Tiesel, et al.          Expires December 29, 2017               [Page 7]
+Tiesel, et al.            Expires March 9, 2018                 [Page 7]
 
-Internet-Draft           QUIC Unreliable Streams               June 2017
+Internet-Draft           QUIC Unreliable Streams          September 2017
 
 
    o  The "SS" bits encode the length of the Stream ID header field.
@@ -445,9 +445,9 @@ Authors' Addresses
 
 
 
-Tiesel, et al.          Expires December 29, 2017               [Page 8]
+Tiesel, et al.            Expires March 9, 2018                 [Page 8]
 
-Internet-Draft           QUIC Unreliable Streams               June 2017
+Internet-Draft           QUIC Unreliable Streams          September 2017
 
 
    Anja Feldmann
@@ -501,4 +501,4 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
 
 
 
-Tiesel, et al.          Expires December 29, 2017               [Page 9]
+Tiesel, et al.            Expires March 9, 2018                 [Page 9]
