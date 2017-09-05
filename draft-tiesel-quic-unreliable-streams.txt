@@ -88,9 +88,9 @@ Table of Contents
    7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   5
    8.  Informative References  . . . . . . . . . . . . . . . . . . .   5
    Appendix A.  Proposal with Application Layer Indicated
-                Reliabliliy  . . . . . . . . . . . . . . . . . . . .   6
+                Reliability  . . . . . . . . . . . . . . . . . . . .   6
      A.1.  Stream Close  . . . . . . . . . . . . . . . . . . . . . .   6
-   Appendix B.  Proposal with stream frame indicated relniabliliy  .   6
+   Appendix B.  Proposal with Stream Frame Indicated Reliability . .   6
      B.1.  Stream Open . . . . . . . . . . . . . . . . . . . . . . .   7
      B.2.  Stream Close  . . . . . . . . . . . . . . . . . . . . . .   7
      B.3.  CLOSE_STREAM Frame  . . . . . . . . . . . . . . . . . . .   7
@@ -302,7 +302,7 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
               DOI 10.17487/RFC2119, March 1997, <https://www.rfc-
               editor.org/info/rfc2119>.
 
-Appendix A.  Proposal with Application Layer Indicated Reliabliliy
+Appendix A.  Proposal with Application Layer Indicated Reliability
 
    This implementation proposal lets the decision and indication of
    unreliable transmission completely to the application.  In this
@@ -320,7 +320,7 @@ A.1.  Stream Close
    bit MUST be retransmitted if lost regardless whether a stream is
    reliable or not.
 
-Appendix B.  Proposal with stream frame indicated relniabliliy
+Appendix B.  Proposal with Stream Frame Indicated Reliability
 
    This implementation proposal repurposes the 'F' (FIN) bit of the
    'type' field from [I-D.draft-ietf-quic-transport] as 'R'(RELIABLE)
@@ -360,9 +360,6 @@ B.2.  Stream Close
    zombie streams.  (Alternative implementation option: RST_STREAM frame
    with error code NO_ERROR indicating the final offset).
 
-   The the CLOSE_STREAM frame has to be resent if lost even if stream
-   frames of this stream are transmitted unreliably.
-
    o  Once an endpoint has completed sending all stream data, it sends a
       CLOSE_STREAM frame.  The stream state becomes "half-closed
       (local).
@@ -387,14 +384,15 @@ B.3.  CLOSE_STREAM Frame
    CLOSE_STREAM frame contains embedded flags, and is formatted as
    "100RSSOO".  These bits are parsed as follows:
 
+   o  The R bit is set to 1 for reliable streams and to 0 otherwise.
+
+
 
 
 Tiesel, et al.          Expires December 29, 2017               [Page 7]
 
 Internet-Draft           QUIC Unreliable Streams               June 2017
 
-
-   o  The R bit is set to 1 for reliable streams and to 0 otherwise.
 
    o  The "SS" bits encode the length of the Stream ID header field.
       The values 00, 01, 02, and 03 indicate lengths of 8, 16, 24, and
@@ -413,6 +411,8 @@ Internet-Draft           QUIC Unreliable Streams               June 2017
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
       |                 Final Offset (0/16/32/64)                   ...
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   CLOSE_STREAM frames must be retransmitted if lost.
 
 Authors' Addresses
 
