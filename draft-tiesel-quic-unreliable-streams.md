@@ -2,7 +2,7 @@
 title: Considerations for Unreliable Streams in QUIC
 abbrev: QUIC Unreliable Streams
 docname: draft-tiesel-quic-unreliable-streams-latest
-date: 2017-06-27
+date: 2017-09-05
 category: info
 
 ipr: trust200902
@@ -37,7 +37,7 @@ author:
     street: Marchstr. 23
     city: Berlin
     country: Germany
-    email: balac@inet.tu-berlin.de>
+    email: balac@inet.tu-berlin.de
  -
     ins: A. Feldmann
     name: Anja Feldmann
@@ -241,8 +241,8 @@ TBD
 
 --- back
 
-Proposal with Application Layer Indicated Reliabliliy {#app_ind}
-===========================
+Proposal with Application Layer Indicated Reliability {#app_ind}
+=====================================================
 
 This implementation proposal lets the decision and indication of
 unreliable transmission completely to the application.
@@ -263,8 +263,8 @@ be retransmitted if lost regardless whether a stream is reliable or not.
 
 
 
-Proposal with stream frame indicated relniabliliy {#str_ind}
-===========================
+Proposal with Stream Frame Indicated Reliability {#str_ind}
+================================================
 
 This implementation proposal repurposes the 'F' (FIN) bit of the 'type' field
 from  [I-D.draft-ietf-quic-transport] as 'R'(RELIABLE) bit and
@@ -290,9 +290,6 @@ Stream Close
 
 Streams MUST be explicitly closed with a CLOSE_STREAM frame indicating the stream ID and final offset of the stream to prevent zombie streams.
 (Alternative implementation option: RST_STREAM frame with error code NO_ERROR indicating the final offset).
-
-The the CLOSE_STREAM frame has to be resent if lost
-even if  stream frames of this stream are transmitted unreliably.
 
  - Once an endpoint has completed sending all stream data,
    it sends a CLOSE_STREAM frame.
@@ -341,3 +338,5 @@ A CLOSE_STREAM frame is shown below.
    |                 Final Offset (0/16/32/64)                   ...
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~
+
+CLOSE_STREAM frames must be retransmitted if lost.
